@@ -3,6 +3,7 @@
 namespace CakeWeb\MongoDB;
 
 use CakeWeb\Iterator;
+use CakeWeb\Exception;
 
 abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 {
@@ -67,7 +68,7 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		$className = get_called_class();
 		if(!defined("{$className}::COLLECTION_CLASS"))
 		{
-			throw new \Exception("A constante {$className}::COLLECTION_CLASS precisa ser definida.");
+			throw new Exception("A constante {$className}::COLLECTION_CLASS precisa ser definida.", 'CAKE-MONGO-MISS-COLLECTION');
 		}
 
 		$collectionClass = static::COLLECTION_CLASS;
