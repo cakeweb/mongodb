@@ -10,7 +10,8 @@
     ],
     "require": {
         "mongodb/mongodb": "^1.0.0",
-        "cakeweb/registry": "^1.0.0"
+        "cakeweb/registry": "^1.0.0",
+        "cakeweb/iterator": "^1.0.0"
     },
     "autoload": {
         "psr-4": {

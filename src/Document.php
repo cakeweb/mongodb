@@ -2,9 +2,30 @@
 
 namespace CakeWeb\MongoDB;
 
-abstract class Document implements \MongoDB\BSON\Persistable
+use CakeWeb\Iterator;
+
+abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 {
 	protected $data = [];
+
+	public function jsonSerialize()
+	{
+		$bson = \MongoDB\BSON\fromPHP($this->data);
+		$json = \MongoDB\BSON\toJSON($bson);
+		$array = json_decode($json, true);
+
+		// Converte ['$oid' => '...'] para '...'
+		Iterator::foreachArray($array, function(&$array, $depth) {
+			if(isset($array['$oid']))
+			{
+				$array = $array['$oid'];
+				return false; // se $array deixar de ser um array, deve-se retornar false
+			}
+			return true; // se $array continuar a ser um array, deve-se retornar true
+		});
+
+		return $array;
+	}
 
 	final public function bsonSerialize()
 	{
