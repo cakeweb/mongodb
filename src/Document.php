@@ -9,6 +9,15 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 {
 	protected $data = [];
 
+	public function __construct(array $data = [])
+	{
+		foreach($data as $paramName => $paramValue)
+		{
+			$setter = 'set' . ucfirst($paramName);
+			$this->$setter($paramValue);
+		}
+	}
+
 	public function jsonSerialize()
 	{
 		$bson = \MongoDB\BSON\fromPHP($this->data);
