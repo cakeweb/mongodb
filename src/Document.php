@@ -89,4 +89,10 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		$this->getCollection()->save($this);
 		return $this;
 	}
+
+	final public function delete()
+	{
+		$this->getCollection()->delete($this);
+		return $this;
+	}
 }
