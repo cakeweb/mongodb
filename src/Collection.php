@@ -90,4 +90,13 @@ abstract class Collection extends \MongoDB\Collection
 		$documentClass = static::DOCUMENT_CLASS;
 		return new $documentClass();
 	}
+
+	final public function findById($id)
+	{
+		if(!$id instanceof \MongoDB\BSON\ObjectID)
+		{
+			$id = new \MongoDB\BSON\ObjectID($id);
+		}
+		return $this->findOne(['_id' => $id]);
+	}
 }
