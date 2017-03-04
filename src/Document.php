@@ -34,7 +34,11 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 			return true; // se $array continuar a ser um array, deve-se retornar true
 		});
 
-		return $array;
+		// Troca a chave '_id' por 'id'
+		$array = array_reverse($array, true);
+		$array['id'] = $array['_id'];
+		unset($array['_id']);
+		return array_reverse($array, true);
 	}
 
 	final public function bsonSerialize()
