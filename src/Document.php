@@ -18,9 +18,26 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		}
 	}
 
+	private function jsonRecursiveSerialize($var, $encode = true)
+	{
+		if(is_iterable($var))
+		{
+			foreach($var as &$_var)
+			{
+				$_var = ($_var instanceof JsonSerializable)
+					? $_var->jsonSerialize()
+					: $this->jsonRecursiveSerialize($_var, false);
+			}
+		}
+		return $encode
+			? json_encode($var)
+			: $var;
+	}
+
 	public function jsonSerialize()
 	{
-		$bson = \MongoDB\BSON\fromPHP($this->data);
+		$data = $this->jsonRecursiveSerialize($this->data, false);
+		$bson = \MongoDB\BSON\fromPHP($data);
 		$json = \MongoDB\BSON\toJSON($bson);
 		$array = json_decode($json, true);
 
@@ -88,13 +105,13 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		return $collectionClass::getInstance();
 	}
 
-	final public function save()
+	public function save()
 	{
 		$this->getCollection()->save($this);
 		return $this;
 	}
 
-	final public function delete()
+	public function delete()
 	{
 		$this->getCollection()->delete($this);
 		return $this;

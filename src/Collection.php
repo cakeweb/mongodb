@@ -85,10 +85,10 @@ abstract class Collection extends \MongoDB\Collection
 		return $this;
 	}
 
-	final public function newDocument()
+	final public function newDocument(array $data = [])
 	{
 		$documentClass = static::DOCUMENT_CLASS;
-		return new $documentClass();
+		return new $documentClass($data);
 	}
 
 	final public function findById($id)
