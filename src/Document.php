@@ -71,8 +71,10 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		$this->data['_updated'] = $dateTime;
 
 		$this->data['__pclass'] = get_called_class();
-		ksort($this->data);
-		return $this->data;
+
+		$data = Iterator::arrayClone($this->data);
+		ksort($data, SORT_NATURAL);
+		return $data;
 	}
 
 	final public function bsonUnserialize(array $data)
