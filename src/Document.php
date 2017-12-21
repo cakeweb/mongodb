@@ -107,6 +107,11 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		return $collectionClass::getInstance();
 	}
 
+	public function getCustomProperty(string $propertyName)
+	{
+		return $this->data[$propertyName] ?? null;
+	}
+
 	public function save()
 	{
 		$this->getCollection()->save($this);
