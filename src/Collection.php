@@ -3,6 +3,7 @@
 namespace CakeWeb\MongoDB;
 
 use CakeWeb\Registry;
+use CakeWeb\HttpStatusCode;
 use CakeWeb\Exception;
 
 abstract class Collection extends \MongoDB\Collection
@@ -98,5 +99,26 @@ abstract class Collection extends \MongoDB\Collection
 			$id = new \MongoDB\BSON\ObjectID($id);
 		}
 		return $this->findOne(['_id' => $id]);
+	}
+
+	final public function findOne($filter = [], array $options = [])
+	{
+		try
+		{
+			$result = parent::findOne($filter, $options);
+		}
+		catch(Error $e)
+		{
+			if($e->getMessage() == 'Argument 3 passed to MongoDB\\Driver\\Server::executeQuery() must be an instance of MongoDB\\Driver\\ReadPreference or null, array given')
+			{
+				HttpStatusCode::set('INTERNAL_SERVER_ERROR');
+				throw new Exception('É necessário atualizar a extensão mongodb para a versão 1.4 ou superior.', 'CAKE-SERVER-OUTDATED');
+			}
+			else
+			{
+				throw $e;
+			}
+		}
+		return $result;
 	}
 }

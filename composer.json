@@ -12,6 +12,7 @@
         "mongodb/mongodb": "^1.0.0",
         "cakeweb/registry": "^1.0.0",
         "cakeweb/iterator": "^1.0.0",
+        "cakeweb/httpstatuscode": "^1.0.0",
         "cakeweb/exception": "^1.0.0"
     },
     "autoload": {
