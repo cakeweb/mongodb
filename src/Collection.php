@@ -107,7 +107,7 @@ abstract class Collection extends \MongoDB\Collection
 		{
 			$result = parent::findOne($filter, $options);
 		}
-		catch(Error $e)
+		catch(\Error $e)
 		{
 			if($e->getMessage() == 'Argument 3 passed to MongoDB\\Driver\\Server::executeQuery() must be an instance of MongoDB\\Driver\\ReadPreference or null, array given')
 			{
