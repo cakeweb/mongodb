@@ -87,11 +87,15 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		$this->data['_id'] = $id;
 	}
 
-	final public function getId()
+	final public function getId(bool $asString = false)
 	{
-		return isset($this->data['_id'])
-			? $this->data['_id']
-			: null;
+		if(empty($this->data['_id']))
+		{
+			return null;
+		}
+		return $asString
+			? (string)$this->data['_id']
+			: $this->data['_id'];
 	}
 
 	final public function getCollection()
@@ -110,6 +114,41 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 	public function getCustomProperty(string $propertyName)
 	{
 		return $this->data[$propertyName] ?? null;
+	}
+
+	public function setCustomProperty(string $propertyName, $propertyValue): self
+	{
+		$this->data[$propertyName] = $propertyValue;
+		return $this;
+	}
+
+	public function getTimeSinceCreated(): string
+	{
+		$dataCadastro = new \DateTime();
+		$dataCadastro->setTimeStamp($this->getId()->getTimeStamp());
+		$intervalo = $dataCadastro->diff(new \DateTime());
+		$intervaloTempo = '';
+		if($intervalo->y > 0)
+		{
+			$intervaloTempo = (string)$intervalo->y . ' Anos';
+		}
+		elseif($intervalo->m > 0)
+		{
+			$intervaloTempo = (string)$intervalo->m . ' Meses';
+		}
+		elseif($intervalo->d > 0)
+		{
+			$intervaloTempo = (string)$intervalo->d . ' Dias';
+		}
+		elseif($intervalo->h > 0)
+		{
+			$intervaloTempo = (string)$intervalo->h . ' Horas';
+		}
+		else
+		{
+			$intervaloTempo = (string)$intervalo->s . ' Segundos';
+		}
+		return $intervaloTempo;
 	}
 
 	public function save()
