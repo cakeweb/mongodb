@@ -121,4 +121,13 @@ abstract class Collection extends \MongoDB\Collection
 		}
 		return $result;
 	}
+
+	final public function aggregate(array $pipeline, array $options = [], bool $useAggregateResult = false)
+	{
+		if($useAggregateResult)
+		{
+			$options['typeMap'] = ['root' => '\CakeWeb\MongoDB\AggregateResult'];
+		}
+		return parent::aggregate($pipeline, $options);
+	}
 }
