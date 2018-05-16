@@ -18,6 +18,12 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		}
 	}
 
+	public function hydrate(array $data): self
+	{
+		$this->data = $data;
+		return $this;
+	}
+
 	private function jsonRecursiveSerialize($var, $encode = true)
 	{
 		if(is_iterable($var))
