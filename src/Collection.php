@@ -130,4 +130,85 @@ abstract class Collection extends \MongoDB\Collection
 		}
 		return parent::aggregate($pipeline, $options);
 	}
+
+	final public function varExport($var, bool $return = false, int $tabs = 0)
+	{
+		if(is_array($var))
+		{
+			$i = 0;
+			$toImplode = [];
+			$openIndent = str_repeat("\t", $tabs + 1);
+			$closeIndent = str_repeat("\t", $tabs);
+			foreach($var as $key => $value)
+			{
+				$valueString = $this->varExport($value, true, $tabs + 1);
+				if($i === $key)
+				{
+					$toImplode[] = $openIndent . $valueString;
+				}
+				else
+				{
+					$toImplode[] = $openIndent . var_export($key, true) . ' => ' . $valueString;
+				}
+				$i++;
+			}
+			$code = '[' . PHP_EOL . implode(',' . PHP_EOL, $toImplode) . PHP_EOL . $closeIndent . ']';
+			if($return)
+			{
+				return $code;
+			}
+			else
+			{
+				echo $code;
+			}
+		}
+		elseif($return && is_null($var))
+		{
+			return 'null';
+		}
+		else
+		{
+			return var_export($var, $return);
+		}
+	}
+
+	final public function mongoToPhp(string $mongo)
+	{
+		$openPosition = strpos($mongo, '[');
+		if($openPosition === false)
+		{
+			return null;
+		}
+		$closePosition = strrpos($mongo, ']');
+		if($closePosition === false)
+		{
+			return null;
+		}
+		$mongo = mb_substr($mongo, $openPosition, $closePosition - $openPosition + 1);
+		$mongo = preg_replace('/ObjectId\((.+?)\)/', '{"$oid":$1}', $mongo);
+		$mongo = json_decode($mongo, true);
+		$php = "\$aggregate = [];";
+		foreach($mongo as $i => $stage)
+		{
+			$n = $i + 1;
+			$fn = array_keys($stage)[0];
+			$array = $this->varExport($stage[$fn], true);
+			$php .= <<<PHP
+
+
+// Stage {$n}
+\$aggregate[] = ['{$fn}' => {$array}];
+PHP;
+		}
+		die('<pre>' . $php . '</pre>');
+	}
+
+	final public function phpToMongo(array $php)
+	{
+		$className = get_called_class();
+		$collectionName = $className::COLLECTION_NAME;
+		$aggregateJson = json_encode($php, JSON_PRETTY_PRINT);
+		$mongo = "db.{$collectionName}.aggregate({$aggregateJson});";
+		die('<pre>' . $mongo . '</pre>');
+	}
 }
