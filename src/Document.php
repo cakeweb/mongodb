@@ -136,23 +136,33 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		$intervaloTempo = '';
 		if($intervalo->y > 0)
 		{
-			$intervaloTempo = (string)$intervalo->y . ' Anos';
+			$intervaloTempo = $intervalo->y < 2
+				? "{$intervalo->y} ano"
+				: "{$intervalo->y} anos";
 		}
 		elseif($intervalo->m > 0)
 		{
-			$intervaloTempo = (string)$intervalo->m . ' Meses';
+			$intervaloTempo = $intervalo->m < 2
+				? "{$intervalo->m} mês"
+				: "{$intervalo->m} meses";
 		}
 		elseif($intervalo->d > 0)
 		{
-			$intervaloTempo = (string)$intervalo->d . ' Dias';
+			$intervaloTempo = $intervalo->d < 2
+				? "{$intervalo->d} dia"
+				: "{$intervalo->d} dias";
 		}
 		elseif($intervalo->h > 0)
 		{
-			$intervaloTempo = (string)$intervalo->h . ' Horas';
+			$intervaloTempo = $intervalo->h < 2
+				? "{$intervalo->h} hora"
+				: "{$intervalo->h} horas";
 		}
 		else
 		{
-			$intervaloTempo = (string)$intervalo->s . ' Segundos';
+			$intervaloTempo = $intervalo->s < 2
+				? "{$intervalo->s} segundo"
+				: "{$intervalo->s} segundos";
 		}
 		return $intervaloTempo;
 	}
