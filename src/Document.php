@@ -2,7 +2,7 @@
 
 namespace CakeWeb\MongoDB;
 
-use CakeWeb\Iterator;
+use CakeWeb\HelperArray;
 use CakeWeb\Exception;
 
 abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
@@ -48,7 +48,7 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		$array = json_decode($json, true);
 
 		// Converte ['$oid' => '...'] para '...'
-		Iterator::foreachArray($array, function(&$array, $depth) {
+		HelperArray::foreachArray($array, function(&$array, $depth) {
 			if(isset($array['$oid']))
 			{
 				$array = $array['$oid'];
@@ -78,7 +78,7 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 
 		$this->data['__pclass'] = get_called_class();
 
-		$data = Iterator::arrayClone($this->data);
+		$data = HelperArray::arrayClone($this->data);
 		ksort($data, SORT_NATURAL);
 		return $data;
 	}
