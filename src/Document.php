@@ -178,4 +178,27 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		$this->getCollection()->delete($this);
 		return $this;
 	}
+
+	public function getRawData(): array
+	{
+		return $this->data;
+	}
+
+	public function unset(string $propertyName): self
+	{
+		unset($this->data[$propertyName]);
+		$this->getCollection()->updateOne([
+			'_id' => $this->getId()
+		], [
+			'$unset' => [
+				$propertyName => 1
+			]
+		]);
+		return $this;
+	}
+
+	public function isEmpty(string $something, int $minLength = 2): bool
+	{
+		return mb_strlen(trim($something)) < $minLength;
+	}
 }
