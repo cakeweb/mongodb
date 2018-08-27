@@ -187,7 +187,7 @@ abstract class Collection extends \MongoDB\Collection
 		$mongo = mb_substr($mongo, $openPosition, $closePosition - $openPosition + 1);
 		$mongo = preg_replace('/ObjectId\((.+?)\)/', '{"$oid":$1}', $mongo);
 		$mongo = json_decode($mongo, true);
-		$php = "\$aggregate = [];";
+		$php = "\$pipeline = [];";
 		foreach($mongo as $i => $stage)
 		{
 			$n = $i + 1;
@@ -197,9 +197,14 @@ abstract class Collection extends \MongoDB\Collection
 
 
 // Stage {$n}
-\$aggregate[] = ['{$fn}' => {$array}];
+\$pipeline[] = ['{$fn}' => {$array}];
 PHP;
 		}
+		$php .= <<<PHP
+
+
+\$aggregate = \$this->aggregate(\$pipeline, [], true);
+PHP;
 		die('<pre>' . $php . '</pre>');
 	}
 
@@ -208,7 +213,7 @@ PHP;
 		$className = get_called_class();
 		$collectionName = $className::COLLECTION_NAME;
 		$aggregateJson = json_encode($php, JSON_PRETTY_PRINT);
-		$mongo = "db.{$collectionName}.aggregate({$aggregateJson});";
+		$mongo = "db.getCollection(\"{$collectionName}\").aggregate({$aggregateJson});";
 		die('<pre>' . $mongo . '</pre>');
 	}
 }
