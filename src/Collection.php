@@ -193,10 +193,12 @@ abstract class Collection extends \MongoDB\Collection
 					'$in' => $ids
 				]
 			];
+			$totalItems = count($ids);
 		}
 		else
 		{
 			$match = [];
+			$totalItems = $this->count();
 		}
 
 		// Obtém apenas os itens da página atual
@@ -239,7 +241,7 @@ abstract class Collection extends \MongoDB\Collection
 		// - page
 		return [
 			'currentPageItems' => $currentPageItems,
-			'totalItems'=> count($currentPageItems),
+			'totalItems'=> $totalItems,
 			'perPage'=> $perPage,
 			'page' => $page
 		];
