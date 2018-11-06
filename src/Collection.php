@@ -56,10 +56,15 @@ abstract class Collection extends \MongoDB\Collection
 		$documentBson = $document->bsonSerialize();
 		if($documentId)
 		{
-			$this->updateOne(
-				['_id' => $documentId],
-				['$set' => $documentBson]
-			);
+			$operations = ['$set' => $documentBson];
+
+			$unsetted = $document->getUnsetted();
+			if(!empty($unsetted))
+			{
+				$operations['$unset'] = $unsetted;
+			}
+
+			$this->updateOne(['_id' => $documentId], $operations);
 		}
 		else
 		{

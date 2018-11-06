@@ -7,6 +7,7 @@ use CakeWeb\Exception;
 
 abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 {
+	protected $unsetted = [];
 	protected $data = [];
 
 	public function __construct(array $data = [])
@@ -184,16 +185,24 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		return $this->data;
 	}
 
+	public function getUnsetted(): array
+	{
+		return $this->unsetted;
+	}
+
+	public function unsetAll(array $propertyNames): self
+	{
+		foreach($propertyNames as $propertyName)
+		{
+			$this->unset($propertyName);
+		}
+		return $this;
+	}
+
 	public function unset(string $propertyName): self
 	{
 		unset($this->data[$propertyName]);
-		$this->getCollection()->updateOne([
-			'_id' => $this->getId()
-		], [
-			'$unset' => [
-				$propertyName => 1
-			]
-		]);
+		$this->unsetted[$propertyName] = 1;
 		return $this;
 	}
 
