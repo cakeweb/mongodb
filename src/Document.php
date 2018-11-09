@@ -55,6 +55,20 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 				$array = $array['$oid'];
 				return false; // se $array deixar de ser um array, deve-se retornar false
 			}
+			if(isset($array['$date']))
+			{
+				$dateTime = new \DateTime();
+				$dateTime->setTimestamp($array['$date'] / 1000);
+				if($dateTime)
+				{
+					$array = [
+						'date' => $dateTime->format('d/m/Y'),
+						'time' => $dateTime->format('H:i'),
+						'timezone' => $dateTime->getTimezone()->getName()
+					];
+					return false;
+				}
+			}
 			return true; // se $array continuar a ser um array, deve-se retornar true
 		});
 
@@ -132,7 +146,7 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 	public function getTimeSinceCreated(): string
 	{
 		$dataCadastro = new \DateTime();
-		$dataCadastro->setTimeStamp($this->getId()->getTimeStamp());
+		$dataCadastro->setTimestamp($this->getId()->getTimestamp());
 		$intervalo = $dataCadastro->diff(new \DateTime());
 		$intervaloTempo = '';
 		if($intervalo->y > 0)
