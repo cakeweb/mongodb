@@ -74,8 +74,11 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 
 		// Troca a chave '_id' por 'id'
 		$array = array_reverse($array, true);
-		$array['id'] = $array['_id'];
-		unset($array['_id']);
+		if(isset($array['_id']))
+		{
+			$array['id'] = $array['_id'];
+			unset($array['_id']);
+		}
 		return array_reverse($array, true);
 	}
 
