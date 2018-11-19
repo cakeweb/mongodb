@@ -146,10 +146,24 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		return $this;
 	}
 
+	public function getCreated(): ?\DateTime
+	{
+		if(isset($this->data['_created']))
+		{
+			return $this->data['_created']->toDateTime();
+		}
+		if($id = $this->getId())
+		{
+			$created = new \DateTime();
+			$created->setTimestamp($id->getTimestamp());
+			return $created;
+		}
+		return null;
+	}
+
 	public function getTimeSinceCreated(): string
 	{
-		$dataCadastro = new \DateTime();
-		$dataCadastro->setTimestamp($this->getId()->getTimestamp());
+		$dataCadastro = $this->getCreated();
 		$intervalo = $dataCadastro->diff(new \DateTime());
 		$intervaloTempo = '';
 		if($intervalo->y > 0)
