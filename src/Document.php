@@ -106,7 +106,7 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		$this->data = $data;
 	}
 
-	final public function setId(\MongoDB\BSON\ObjectID $id)
+	final public function setId(\MongoDB\BSON\ObjectId $id)
 	{
 		$this->data['_id'] = $id;
 	}
@@ -117,9 +117,15 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 		{
 			return null;
 		}
-		return $asString
-			? (string)$this->data['_id']
-			: $this->data['_id'];
+		if($asString)
+		{
+			return (string)$this->data['_id'];
+		}
+		if(!$this->data['_id'] instanceof \MongoDB\BSON\ObjectId)
+		{
+			return new \MongoDB\BSON\ObjectId($this->data['_id']);
+		}
+		return $this->data['_id'];
 	}
 
 	final public function getCollection()
