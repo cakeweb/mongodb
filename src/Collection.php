@@ -305,11 +305,16 @@ abstract class Collection extends \MongoDB\Collection
 		{
 			return null;
 		}
-		$mongo = mb_substr($mongo, $openPosition, $closePosition - $openPosition + 1);
-		$mongo = preg_replace('/ObjectId\((.+?)\)/', '{"$oid":$1}', $mongo);
-		$mongo = json_decode($mongo, true);
+		$mongoString = mb_substr($mongo, $openPosition, $closePosition - $openPosition + 1);
+		$mongoString = preg_replace('/ObjectId\((.+?)\)/', '{"$oid":$1}', $mongoString);
+		$mongoString = preg_replace('/(^\s*)([^\"\{\[\}\s]{1,})\:/m', '$1"$2":', $mongoString);
+		$mongoArray = json_decode($mongoString, true);
+		if(!is_array($mongoArray))
+		{
+			die("Fail to decode JSON <pre>{$mongoString}</pre> as PHP array.");
+		}
 		$php = "\$pipeline = [];";
-		foreach($mongo as $i => $stage)
+		foreach($mongoArray as $i => $stage)
 		{
 			$n = $i + 1;
 			$fn = array_keys($stage)[0];
