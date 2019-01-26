@@ -252,94 +252,15 @@ abstract class Collection extends \MongoDB\Collection
 		];
 	}
 
-	final public function varExport($var, bool $return = false, int $tabs = 0)
+	final public function mongoToPhp(string $mongo): void
 	{
-		if(is_array($var))
-		{
-			$i = 0;
-			$toImplode = [];
-			$openIndent = str_repeat("\t", $tabs + 1);
-			$closeIndent = str_repeat("\t", $tabs);
-			foreach($var as $key => $value)
-			{
-				$valueString = $this->varExport($value, true, $tabs + 1);
-				if($i === $key)
-				{
-					$toImplode[] = $openIndent . $valueString;
-				}
-				else
-				{
-					$toImplode[] = $openIndent . var_export($key, true) . ' => ' . $valueString;
-				}
-				$i++;
-			}
-			$code = '[' . PHP_EOL . implode(',' . PHP_EOL, $toImplode) . PHP_EOL . $closeIndent . ']';
-			if($return)
-			{
-				return $code;
-			}
-			else
-			{
-				echo $code;
-			}
-		}
-		elseif($return && is_null($var))
-		{
-			return 'null';
-		}
-		else
-		{
-			return var_export($var, $return);
-		}
+		Transcoder::mongoToPhp($mongo);
 	}
 
-	final public function mongoToPhp(string $mongo)
-	{
-		$openPosition = strpos($mongo, '[');
-		if($openPosition === false)
-		{
-			return null;
-		}
-		$closePosition = strrpos($mongo, ']');
-		if($closePosition === false)
-		{
-			return null;
-		}
-		$mongoString = mb_substr($mongo, $openPosition, $closePosition - $openPosition + 1);
-		$mongoString = preg_replace('/ObjectId\((.+?)\)/', '{"$oid":$1}', $mongoString);
-		$mongoString = preg_replace('/(^\s*)([^\"\{\[\}\s]{1,})\:/m', '$1"$2":', $mongoString);
-		$mongoArray = json_decode($mongoString, true);
-		if(!is_array($mongoArray))
-		{
-			die("Fail to decode JSON <pre>{$mongoString}</pre> as PHP array.");
-		}
-		$php = "\$pipeline = [];";
-		foreach($mongoArray as $i => $stage)
-		{
-			$n = $i + 1;
-			$fn = array_keys($stage)[0];
-			$array = $this->varExport($stage[$fn], true);
-			$php .= <<<PHP
-
-
-// Stage {$n}
-\$pipeline[] = ['{$fn}' => {$array}];
-PHP;
-		}
-		$php .= <<<PHP
-
-
-\$aggregate = \$this->aggregate(\$pipeline, [], true);
-PHP;
-		die('<pre>' . $php . '</pre>');
-	}
-
-	final public function phpToMongo(array $php)
+	final public function phpToMongo(array $php): void
 	{
 		$className = get_called_class();
 		$collectionName = $className::COLLECTION_NAME;
-		$aggregateJson = json_encode($php, JSON_PRETTY_PRINT);
-		$mongo = "db.getCollection(\"{$collectionName}\").aggregate({$aggregateJson});";
-		die('<pre>' . $mongo . '</pre>');
+		Transcoder::phpToMongo($php, $collectionName);
 	}
 }
