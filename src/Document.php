@@ -2,8 +2,8 @@
 
 namespace CakeWeb\MongoDB;
 
-use CakeWeb\HelperArray;
 use CakeWeb\Exception;
+use CakeWeb\HelperArray;
 
 abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 {
@@ -48,7 +48,7 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
         {
             return $this->data['unique_id'];
         }
-        $slug = (new Slug)->filter($this->_getUniqueId());
+        $slug = (new \CakeWeb\Filter\Slug)->filter($this->_getUniqueId());
         for(
             $n = 1;
             $this->getCollection()->findOne([
