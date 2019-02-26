@@ -42,30 +42,33 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
             : "{$slug}-{$n}";
     }
 
-    public function getUniqueId(): string
+    public function getUniqueId(bool $camelCase = false): string
     {
-        if(isset($this->data['unique_id']))
+        if(!isset($this->data['unique_id']))
         {
-            return $this->data['unique_id'];
-        }
-        $slug = (new \CakeWeb\Filter\Slug)->filter($this->_getUniqueId());
-        for(
-            $n = 1;
-            $this->getCollection()->findOne([
-                '_id' => ['$ne' => $this->getId()],
-                'unique_id' => $this->generateUniqueId($slug, $n)
+            $slug = (new \CakeWeb\Filter\Slug)->filter($this->_getUniqueId());
+            for(
+                $n = 1;
+                $this->getCollection()->findOne([
+                    '_id' => ['$ne' => $this->getId()],
+                    'unique_id' => $this->generateUniqueId($slug, $n)
+                ]);
+                $n++
+            ) {}
+            $this->data['unique_id'] = $this->generateUniqueId($slug, $n);
+            $this->getCollection()->updateOne([
+                '_id' => $this->getId()
+            ], [
+                '$set' => [
+                    'unique_id' => $this->data['unique_id']
+                ]
             ]);
-            $n++
-        ) {}
-        $this->data['unique_id'] = $this->generateUniqueId($slug, $n);
-        $this->getCollection()->updateOne([
-            '_id' => $this->getId()
-        ], [
-            '$set' => [
-                'unique_id' => $this->data['unique_id']
-            ]
-        ]);
-        return $this->data['unique_id'];
+        }
+        return $camelCase
+            ? preg_replace_callback('/(\-)(.{1})/', function($matches) {
+                return strtoupper($matches[2]);
+            }, $this->data['unique_id'])
+            : $this->data['unique_id'];
     }
 
     public function hydrate(array $data): self
