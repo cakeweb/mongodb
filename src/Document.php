@@ -306,6 +306,14 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 
     public function getUnsetted(): array
     {
+        foreach($this->unsetted as $propertyName => $int)
+        {
+            if(isset($this->data[$propertyName]))
+            {
+                $className = get_called_class();
+                throw new Exception("A propriedade \"{$propertyName}\" existe no \$this->data da classe {$className} e por isso não pode ser excluída. Tente chamar a função unset(\$this->data['{$propertyName}']); dentro da Document.", 'CAKE-MONGO-INVALID-OPERATION');
+            }
+        }
         return $this->unsetted;
     }
 
