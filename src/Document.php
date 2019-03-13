@@ -153,7 +153,7 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
 
         if($this->i18nPropNames)
         {
-            $lang = \Application\I18n::getLang();
+            $lang = \CakeWeb\I18n::getLang();
             foreach($this->i18nPropNames as $name)
             {
                 if(isset($data[$name]) && is_string($data[$name]))
@@ -175,7 +175,7 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
     {
         if($this->i18nPropNames)
         {
-            $lang = \Application\I18n::getLang();
+            $lang = \CakeWeb\I18n::getLang();
             foreach($this->i18nPropNames as $name)
             {
                 if(isset($data[$name]) && is_object($data[$name]))
