@@ -8,6 +8,13 @@ use CakeWeb\Exception;
 
 abstract class Collection extends \MongoDB\Collection
 {
+    const DELETED = ['$or' => [
+        ['deleted' => false],
+        ['deleted' => ['$exists' => false]]
+    ]];
+
+    public $softDelete = false;
+
 	final public static function getInstance()
 	{
 		$className = get_called_class();
@@ -91,22 +98,31 @@ abstract class Collection extends \MongoDB\Collection
 		return $this;
 	}
 
-	final public function newDocument(array $data = [])
+	final public function newDocument(array $data = []): Document
 	{
 		$documentClass = static::DOCUMENT_CLASS;
 		return new $documentClass($data);
 	}
 
-	final public function findById($id)
+    public function find($filter = [], array $options = [])
+    {
+        if($this->softDelete && !isset($filter['$or']))
+        {
+            $filter['$or'] = self::DELETED['$or'];
+        }
+        return parent::find($filter, $options);
+    }
+
+	final public function findById($id): ?Document
 	{
-		if(!$id instanceof \MongoDB\BSON\ObjectID)
+		if(!$id instanceof \MongoDB\BSON\ObjectId)
 		{
-			$id = new \MongoDB\BSON\ObjectID($id);
+			$id = new \MongoDB\BSON\ObjectId($id);
 		}
 		return $this->findOne(['_id' => $id]);
 	}
 
-	final public function findOne($filter = [], array $options = [])
+	final public function findOne($filter = [], array $options = []): ?Document
 	{
 		try
 		{
@@ -136,8 +152,31 @@ abstract class Collection extends \MongoDB\Collection
 		return parent::aggregate($pipeline, $options);
 	}
 
+    protected function getIdsFromPipeline(array $pipeline, bool $debug = false): array
+    {
+        $pipeline[] = [
+            '$group' => [
+                '_id' => null,
+                'ids' => ['$push' => '$_id']
+            ]
+        ];
+        if($debug)
+        {
+            $this->phpToMongo($pipeline);
+        }
+        $results = $this->aggregate($pipeline, [], true)->toArray();
+        return $results[0]->data['ids'] ?? [];
+    }
+
 	protected function _findAndPaginate(array $filters): ?array
 	{
+        if($this->softDelete)
+        {
+            $pipeline[] = [
+                '$match' => self::DELETED
+            ];
+            return $this->getIdsFromPipeline($pipeline);
+        }
 		return $this->selectIds($filters);
 	}
 
@@ -175,6 +214,13 @@ abstract class Collection extends \MongoDB\Collection
 			// Obtém a quantidade desejada
 			$perPage = (int)$query->perPage ?: 12;
 		}
+
+        // Soft delete
+        if($this->softDelete)
+        {
+            // Garante que o método _findAndPaginate seja chamado
+            $filters[] = true;
+        }
 
 		// Obtém todos os IDs que satisfazem os $filters informados
 		$hasFilters = !empty($filters);

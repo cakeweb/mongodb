@@ -188,9 +188,10 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
         $this->data = $data;
     }
 
-    final public function setId(\MongoDB\BSON\ObjectId $id)
+    final public function setId(\MongoDB\BSON\ObjectId $id): self
     {
         $this->data['_id'] = $id;
+        return $this;
     }
 
     final public function getId(bool $asString = false)
@@ -210,7 +211,7 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
         return $this->data['_id'];
     }
 
-    final public function getCollection()
+    final public function getCollection(): Collection
     {
         // Verifica se a constante COLLECTION_CLASS foi definida
         $className = get_called_class();
@@ -287,15 +288,29 @@ abstract class Document implements \MongoDB\BSON\Persistable, \JsonSerializable
         return $intervaloTempo;
     }
 
-    public function save()
+    public function save(): self
     {
         $this->getCollection()->save($this);
         return $this;
     }
 
+    public function isDeleted(): bool
+    {
+        return $this->data['deleted'] ?? false;
+    }
+
     public function delete()
     {
-        $this->getCollection()->delete($this);
+        $collection = $this->getCollection();
+        if($collection->softDelete)
+        {
+            $this->data['deleted'] = true;
+            $collection->save($this);
+        }
+        else
+        {
+            $collection->delete($this);
+        }
         return $this;
     }
 
