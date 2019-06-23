@@ -14,6 +14,7 @@ abstract class Collection extends \MongoDB\Collection
     ]];
 
     public $softDelete = false;
+    public $instanceName = '';
 
 	final public static function getInstance()
 	{
@@ -21,15 +22,17 @@ abstract class Collection extends \MongoDB\Collection
 		if(!Registry::get($className))
 		{
 			// Obtém o 1º argumento do construtor
-			if(!$mongoManager = Registry::get('mongoManager'))
+			$mongoManagerName = "mongoManager{$this->instanceName}";
+			if(!$mongoManager = Registry::get($mongoManagerName))
 			{
-				throw new Exception("{$className}::getInstance() não localizou 'mongoManager' no Registry.", 'CAKE-MONGO-UNINITIALIZED');
+				throw new Exception("{$className}::getInstance() não localizou '{$mongoManagerName}' no Registry.", 'CAKE-MONGO-UNINITIALIZED');
 			}
 
 			// Obtém o 2º argumento do construtor
-			if(!$mongoConfig = Registry::get('mongoConfig'))
+			$mongoConfigName = "mongoConfig{$this->instanceName}";
+			if(!$mongoConfig = Registry::get($mongoConfigName))
 			{
-				throw new Exception("{$className}::getInstance() não localizou 'mongoConfig' no Registry.", 'CAKE-MONGO-UNINITIALIZED');
+				throw new Exception("{$className}::getInstance() não localizou '{$mongoConfigName}' no Registry.", 'CAKE-MONGO-UNINITIALIZED');
 			}
 
 			// Obtém o 3º argumento do construtor
